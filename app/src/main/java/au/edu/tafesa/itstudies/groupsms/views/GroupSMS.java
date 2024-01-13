@@ -19,12 +19,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import au.edu.tafesa.itstudies.groupsms.R;
-import au.edu.tafesa.itstudies.groupsms.models.SMSDataModelArray;
+import au.edu.tafesa.itstudies.groupsms.models.SMSDataModelList;
 
 public class GroupSMS extends AppCompatActivity {
 
     public static final String CLASS_TAG = "GroupSMS";
-    private SMSDataModelArray messageData;
+    private SMSDataModelList messageData;
 
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -33,7 +33,7 @@ public class GroupSMS extends AppCompatActivity {
         TextView tvMessageDetails = findViewById(R.id.tvMessageDetails);
         tvMessageDetails.setBackgroundColor(Color.GREEN);
         tvMessageDetails.setMovementMethod(new ScrollingMovementMethod());
-        messageData = new SMSDataModelArray("NOT SET", 5);
+        messageData = new SMSDataModelList("NOT SET", 5);
         messageData.addPhoneNumber("0401125172");
 
         ActivityResultContract simpleRawIntentContract;
@@ -178,7 +178,7 @@ public class GroupSMS extends AppCompatActivity {
             if (result.getResultCode() == Activity.RESULT_OK) {
                 Intent data = result.getData();
                 String newPhone = (String) (data.getStringExtra("NEW_PHONE"));
-                GroupSMS.this.messageData = (SMSDataModelArray) (data.getSerializableExtra("NEW_PHONE"));
+                GroupSMS.this.messageData = (SMSDataModelList) (data.getSerializableExtra("NEW_PHONE"));
                 setSummary();
             }
         }

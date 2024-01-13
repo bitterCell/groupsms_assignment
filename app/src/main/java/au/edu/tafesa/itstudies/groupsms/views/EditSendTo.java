@@ -18,7 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import au.edu.tafesa.itstudies.groupsms.R;
-import au.edu.tafesa.itstudies.groupsms.models.SMSDataModelArray;
+import au.edu.tafesa.itstudies.groupsms.models.SMSDataModelList;
 import au.edu.tafesa.itstudies.groupsms.models.SMSDataModelInterface;
 
 public class EditSendTo extends AppCompatActivity {
@@ -32,7 +32,7 @@ public class EditSendTo extends AppCompatActivity {
     private Button btnDone;
 
     // The data (model) we are working with
-    private SMSDataModelArray messageData;
+    private SMSDataModelList messageData;
     // The handler for the listView events
     private ListViewItemSelectedHandler listViewItemSelectedHandler;
     @Override
@@ -43,9 +43,9 @@ public class EditSendTo extends AppCompatActivity {
         // Get the SMSDataModel object that contains the data for this SMS Message
         Intent editIntent;
         editIntent = this.getIntent();
-        messageData = (SMSDataModelArray) editIntent.getSerializableExtra("CURRENT_PHONE");
+        messageData = (SMSDataModelList) editIntent.getSerializableExtra("CURRENT_PHONE");
         if (messageData == null) {
-            messageData = new SMSDataModelArray("");
+            messageData = new SMSDataModelList("");
         }
 
         // Set the Adapter for the ListView containing the list of Phone Numbers
@@ -135,7 +135,22 @@ public class EditSendTo extends AppCompatActivity {
 
         public void onClick(View v) {
             Log.i(CLASS_TAG, "OnClick...");
-            //TODO See comments above.
+            // See comments above.
+            String phoneNumber = etPhone.getText().toString();
+            if (phoneNumber.equals("")) {
+                Toast.makeText(EditSendTo.this, "No phone number giver", Toast.LENGTH_SHORT).show();
+            } else {
+                messageData.addPhoneNumber(phoneNumber);
+                if (messageData.isFull()) {
+                    Toast.makeText(EditSendTo.this, "Phone number list is full", Toast.LENGTH_SHORT).show();
+                }
+                Toast.makeText(EditSendTo.this, "Added " + phoneNumber + " to slot " + (listViewItemSelectedHandler.getCurrentSelectedPosition()+1), Toast.LENGTH_SHORT).show();
+                ((MyListViewAdapter) lvPhoneNumbers.getAdapter()).notifyDataSetChanged();
+            }
+
+            if (messageData.isFull()) {
+                btnAddNew.setEnabled(false);
+            }
        
         }
 
@@ -154,9 +169,52 @@ public class EditSendTo extends AppCompatActivity {
 
         public void onClick(View v) {
             Log.i(CLASS_TAG, "OnClick...");
-            //TODO See comments above
-    
+            // See comments above
+            btnAddNew.setEnabled(true);
 
+            // Defines variables
+            String deletedNumber;
+            String replacementNumber;
+
+            View rowView;
+            rowView = (View) v.getParent();
+            int currentPositionInListView;
+
+            // gets the (wrong) selected number (I want the number that corresponds with
+            // the delete button the user presses
+//            currentPositionInListView = listViewItemSelectedHandler.getCurrentSelectedPosition();
+            currentPositionInListView = lvPhoneNumbers.getPositionForView(rowView);
+            int selectedPos = listViewItemSelectedHandler.getCurrentSelectedPosition();
+
+            boolean currPosGreaterThanDeleted;
+            currPosGreaterThanDeleted = selectedPos >= currentPositionInListView;
+
+                    // gets the number that is to be deleted to use in Log.i(); (but gets the number
+            // currently selected to be edited)
+            deletedNumber = messageData.getPhoneNumber(currentPositionInListView);
+
+//            // Iterates through the list, gets the number above the current number and updates
+//            // it to equal that, and does that for every number.
+//            for (int i = currentPositionInListView; i < messageData.getNumPhoneNumbers(); i++) {
+//                Log.i("Updating Number", messageData.getPhoneNumber(i) + " at slot " + i);
+//                // N.B: if this had duplicate testing this would not work
+//                messageData.updatePhoneNumber(messageData.getPhoneNumber(i+1), i);
+//            }
+//
+//            Log.i("Deleting Number", "" + messageData.getNumPhoneNumbers());
+//            // deletes the number at the end of the list as it is now a duplicate of the one above.
+//            messageData.deleteNumber(messageData.getNumPhoneNumbers()-1);
+
+            messageData.deleteNumber(currentPositionInListView);
+
+            if (currPosGreaterThanDeleted) {
+                listViewItemSelectedHandler.onItemSelected((ListView) rowView.getParent(), rowView, selectedPos-1, selectedPos-1);
+            }
+
+            // (I know I can put the above line in the Toast.makeText(); line but that doesn't
+            // doesn't feel right/makes it harder to explain
+            Toast.makeText(EditSendTo.this, "Deleted " + deletedNumber, Toast.LENGTH_SHORT).show();
+            ((MyListViewAdapter) lvPhoneNumbers.getAdapter()).notifyDataSetChanged();
         }
 
     }
